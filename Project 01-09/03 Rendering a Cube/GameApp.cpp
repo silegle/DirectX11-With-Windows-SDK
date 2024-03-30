@@ -47,6 +47,53 @@ void GameApp::UpdateScene(float dt)
     HR(m_pd3dImmediateContext->Map(m_pConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedData));
     memcpy_s(mappedData.pData, sizeof(m_CBuffer), &m_CBuffer, sizeof(m_CBuffer));
     m_pd3dImmediateContext->Unmap(m_pConstantBuffer.Get(), 0);
+    // 初始化鼠标，键盘不需要
+    m_pMouse->SetWindow(m_hMainWnd);
+    m_pMouse->SetMode(DirectX::Mouse::MODE_ABSOLUTE);
+    //获取鼠标状态
+    Mouse::State mouseState = m_pMouse->GetState();
+    Mouse::State lastMouseState = m_MouseTracker.GetLastState();
+    // 更新鼠标按钮状态   
+    m_MouseTracker.Update(mouseState);
+    if (mouseState.leftButton == true && m_MouseTracker.leftButton == m_MouseTracker.HELD)
+    {
+        // 旋转立方体
+        theta -= (mouseState.x - lastMouseState.x) * 0.01f;
+        phi -= (mouseState.y - lastMouseState.y) * 0.01f;
+
+    }
+
+    m_CBuffer.world = XMMatrixRotationY(theta) * XMMatrixRotationX(phi);
+    //获取键盘状态
+    Keyboard::State keyState = m_pKeyboard->GetState();
+    Keyboard::State lastKeyState = m_KeyboardTracker.GetLastState();
+    //更新键盘按钮状态
+    m_KeyboardTracker.Update(keyState);
+    if (keyState.IsKeyDown(Keyboard::W))
+    {
+        phi += dt * 3;
+    }
+
+    if (keyState.IsKeyDown(Keyboard::S))
+    {
+        phi -= dt * 3;
+    }
+
+    if (keyState.IsKeyDown(Keyboard::A))
+    {
+        theta += dt * 3;
+    }
+
+    if (keyState.IsKeyDown(Keyboard::D))
+    {
+        theta -= dt * 3;
+    }
+
+    m_CBuffer.world = XMMatrixRotationY(theta) * XMMatrixRotationX(phi);
+
+
+
+
 }
 
 void GameApp::DrawScene()
